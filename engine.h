@@ -21,10 +21,16 @@ struct Meta
     int fps;
 };
 
+struct Game
+{
+    bool should_move_enemies;
+};
+
 struct Context
 {
     struct Screen screen;
     struct Meta meta;
+    struct Game game;
 };
 
 typedef void (*setup_handler)(struct Context*);

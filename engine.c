@@ -46,8 +46,10 @@ void setup(struct Context* ctx)
 void draw(struct Context* ctx)
 {
     render_fps_counter(ctx);
+
     render_scenery(ctx);
     render_player(ctx);
+    render_enemy(ctx);
 }
 
 void prerender(struct Context* ctx)
