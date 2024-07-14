@@ -1,9 +1,7 @@
-#pragma once
-
-#include "engine.h"
 #ifndef GAME_H
 #define GAME_H
 
+#include "engine.h"
 #include <stdbool.h>
 
 struct PlayerPosition { float x; float y; };

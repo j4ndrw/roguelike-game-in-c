@@ -26,8 +26,8 @@ void clamp_player_to_screen(struct Player* player, int screen_width, int screen_
 struct Player player = {0};
 void render_player(struct Context* ctx)
 {
-    const float player_sprite_width = .5 * FACTOR;
-    const float player_sprite_height = .5 * FACTOR;
+    const float player_sprite_width = .5 * ctx->meta.factor;
+    const float player_sprite_height = .5 * ctx->meta.factor;
 
     clamp_player_to_screen(&player, ctx->screen.width, ctx->screen.height);
 
@@ -43,7 +43,7 @@ void render_player(struct Context* ctx)
         .width = player_sprite_width,
         .height = player_sprite_height,
     };
-    const float thickness = .1f * FACTOR;
+    const float thickness = .1f * ctx->meta.factor;
     DrawRectangleLinesEx(player_sprite, thickness, RAYWHITE);
 
     const float velocity = 5.0f;

@@ -36,5 +36,5 @@ mkdir -p target
 mkdir -p target/debug
 mkdir -p target/release
 
-find_all_c_files | compile "cc % $CFLAGS -ggdb -o ./target/debug/game"
-find_all_c_files | compile "cc % $CFLAGS -o ./target/debug/game"
+find_all_c_files | compile "cc -DFLAG_DEBUG % $CFLAGS -ggdb -o ./target/debug/game"
+find_all_c_files | compile "cc % $CFLAGS -o ./target/release/game"

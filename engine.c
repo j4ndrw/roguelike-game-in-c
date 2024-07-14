@@ -1,11 +1,14 @@
 #include "raylib.h"
 #include "engine.h"
 #include "game.h"
+#include "utils.h"
+#include <stdio.h>
 
 int ASPECT_RATIO_WIDTH = 16;
 int ASPECT_RATIO_HEIGHT = 9;
 int FACTOR = 120 * 1.5;
 
+struct Context ctx = {0};
 
 void event_loop(
     setup_handler setup,
@@ -14,34 +17,40 @@ void event_loop(
     postrender_handler postrender
 )
 {
-    struct Context ctx = {0};
-
-    setup();
+    setup(&ctx);
     while(!WindowShouldClose()) {
-        if (prerender != NULL) prerender();
+        if (prerender != NULL) prerender(&ctx);
         BeginDrawing();
 
         ctx.screen.width = GetScreenWidth();
         ctx.screen.height = GetScreenHeight();
+        ctx.meta.fps = GetFPS();
 
         draw(&ctx);
         EndDrawing();
-        if (postrender != NULL) postrender();
+        if (postrender != NULL) postrender(&ctx);
     }
 }
 
-void setup(void)
+void setup(struct Context* ctx)
 {
+    ctx->meta.factor = FACTOR;
+#ifdef FLAG_DEBUG
+    ctx->meta.should_render_fps_counter = true;
+#else
+    ctx->meta.should_render_fps_counter = false;
+#endif
     InitWindow(ASPECT_RATIO_WIDTH * FACTOR, ASPECT_RATIO_HEIGHT * FACTOR, "Roguelike Game");
 }
 
 void draw(struct Context* ctx)
 {
+    render_fps_counter(ctx);
     render_scenery(ctx);
     render_player(ctx);
 }
 
-void prerender(void)
+void prerender(struct Context* ctx)
 {
     /*! TODO: I forgor...
      *
@@ -49,7 +58,7 @@ void prerender(void)
      */
 }
 
-void postrender(void)
+void postrender(struct Context* ctx)
 {
     /*! TODO: I forgor...
      *

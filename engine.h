@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -15,15 +13,23 @@ struct Screen
     int width;
     int height;
 };
+
+struct Meta
+{
+    int factor;
+    bool should_render_fps_counter;
+    int fps;
+};
+
 struct Context
 {
     struct Screen screen;
+    struct Meta meta;
 };
 
-typedef void (*setup_handler)(void);
-
-typedef void (*prerender_handler)(void);
-typedef void (*postrender_handler)(void);
+typedef void (*setup_handler)(struct Context*);
+typedef void (*prerender_handler)(struct Context*);
+typedef void (*postrender_handler)(struct Context*);
 typedef void (*draw_handler)(struct Context*);
 
 
@@ -34,9 +40,9 @@ void event_loop(
     postrender_handler postrender
 );
 
-void setup(void);
+void setup(struct Context* ctx);
 void draw(struct Context* ctx);
-void prerender(void);
-void postrender(void);
+void prerender(struct Context* ctx);
+void postrender(struct Context* ctx);
 
 #endif // ENGINE_H
