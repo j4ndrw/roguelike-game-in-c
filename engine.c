@@ -3,6 +3,7 @@
 #include "game.h"
 #include "utils.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int ASPECT_RATIO_WIDTH = 16;
 int ASPECT_RATIO_HEIGHT = 9;
@@ -34,20 +35,31 @@ void event_loop(
 
 void setup(struct Context* ctx)
 {
+    InitWindow(ASPECT_RATIO_WIDTH * FACTOR, ASPECT_RATIO_HEIGHT * FACTOR, "Roguelike Game");
+
+    ctx->screen.aspect_ratio.x = ASPECT_RATIO_WIDTH;
+    ctx->screen.aspect_ratio.y = ASPECT_RATIO_HEIGHT;
     ctx->meta.factor = FACTOR;
 #ifdef FLAG_DEBUG
     ctx->meta.should_render_fps_counter = true;
 #else
     ctx->meta.should_render_fps_counter = false;
 #endif
-    InitWindow(ASPECT_RATIO_WIDTH * FACTOR, ASPECT_RATIO_HEIGHT * FACTOR, "Roguelike Game");
+
+    ctx->screen.width = GetScreenWidth();
+    ctx->screen.height = GetScreenHeight();
+    alloc_grid(ctx);
 }
 
 void draw(struct Context* ctx)
 {
-    render_fps_counter(ctx);
+    toggle_fullscreen(ctx);
 
     render_scenery(ctx);
+
+    render_fps_counter(ctx);
+
+    render_grid(ctx);
     render_player(ctx);
     render_enemy(ctx);
 }

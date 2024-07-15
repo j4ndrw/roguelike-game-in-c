@@ -1,5 +1,6 @@
 #include "game.h"
 #include "enemy.h"
+#include "entity.h"
 #include "raylib.h"
 #include "engine.h"
 #include "player.h"
@@ -18,20 +19,52 @@ void render_scenery(struct Context* ctx)
     DrawText(text, ctx->screen.width / 2 - (text_size / 2), text_height, font_size, RAYWHITE);
 }
 
+void render_grid(struct Context* ctx)
+{
+    for (int row = 0; row < ctx->game.grid.rows; ++row) {
+        for (int col = 0; col < ctx->game.grid.cols; ++col) {
+            int tile_idx = row * ctx->game.grid.rows + col;
+
+            int width = ctx->game.grid.tiles[tile_idx].width;
+            int height = ctx->game.grid.tiles[tile_idx].height;
+            int x = col * width;
+            int y = row * height;
+
+            const Rectangle tile = {
+                .x = x,
+                .y = y,
+                .width = width,
+                .height = height,
+            };
+            const float thickness = 1.0f;
+            DrawRectangleLinesEx(
+                tile,
+                thickness,
+                LIGHTGRAY
+            );
+
+            if (!ctx->game.grid.rendered) {
+                ctx->game.grid.tiles[tile_idx].x = x;
+                ctx->game.grid.tiles[tile_idx].y = y;
+            };
+        }
+    }
+    ctx->game.grid.rendered = true;
+}
+
 struct Player player = {0};
 void render_player(struct Context* ctx)
 {
-
     if (!player.meta.rendered)
     {
-        player.position.width = .5 * ctx->meta.factor;
-        player.position.height = .5 * ctx->meta.factor;
-        player.position.x = ((float)ctx->screen.width / 2) - (player.position.width / 2);
-        player.position.y = ((float)ctx->screen.height / 2) - (player.position.height / 2);
+        player.position.width = ctx->game.grid.tiles[0].width;
+        player.position.height = ctx->game.grid.tiles[0].height;
+        player.position.x = ((float)ctx->game.grid.cols / 2) - (player.position.width / 2);
+        player.position.y = ((float)ctx->game.grid.rows / 2) - (player.position.height / 2);
         player.meta.rendered = true;
     }
 
-    entity_clamp_to_screen(&player.position, ctx->screen.width, ctx->screen.height);
+    entity_clamp(&player.position, ctx->screen.width, ctx->screen.height);
 
     const Rectangle player_sprite = {
         .x = player.position.x,
@@ -42,42 +75,18 @@ void render_player(struct Context* ctx)
     const float thickness = .1f * ctx->meta.factor;
     DrawRectangleLinesEx(player_sprite, thickness, RAYWHITE);
 
-    const float velocity = 5.0f;
+    enum MoveDirection move_direction = MOVE_DIRECTION_NULL;
 
-    if (GetKeyPressed() == KEY_NULL) {
-        ctx->game.should_move_enemies = false;
-    }
+    if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) move_direction = MOVE_DIRECTION_UP;
+    if (IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT)) move_direction = MOVE_DIRECTION_LEFT;
+    if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) move_direction = MOVE_DIRECTION_DOWN;
+    if (IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT)) move_direction = MOVE_DIRECTION_RIGHT;
 
-    if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
-        ctx->game.should_move_enemies = true;
+    ctx->game.should_move_enemies = move_direction != MOVE_DIRECTION_NULL;
+    if (move_direction != MOVE_DIRECTION_NULL) {
         entity_move(
             &player.position,
-            MOVE_DIRECTION_UP,
-            velocity
-        );
-    }
-    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-        ctx->game.should_move_enemies = true;
-        entity_move(
-            &player.position,
-            MOVE_DIRECTION_LEFT,
-            velocity
-        );
-    }
-    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
-        ctx->game.should_move_enemies = true;
-        entity_move(
-            &player.position,
-            MOVE_DIRECTION_DOWN,
-            velocity
-        );
-    }
-    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))  {
-        ctx->game.should_move_enemies = true;
-        entity_move(
-            &player.position,
-            MOVE_DIRECTION_RIGHT,
-            velocity
+            move_direction
         );
     }
 }
@@ -87,12 +96,12 @@ void render_enemy(struct Context* ctx)
 {
     if (!enemy.meta.rendered)
     {
-        enemy.position.width = .5 * ctx->meta.factor;
-        enemy.position.height = .5 * ctx->meta.factor;
+        enemy.position.width = ctx->game.grid.tiles[0].width;
+        enemy.position.height = ctx->game.grid.tiles[0].height;
         do
         {
-            enemy.position.x = rand() % ctx->screen.width;
-            enemy.position.y = rand() % ctx->screen.height;
+            enemy.position.x = rand() % ctx->game.grid.cols;
+            enemy.position.y = rand() % ctx->game.grid.rows;
         } while(
             enemy.position.x == player.position.x &&
             enemy.position.y == player.position.y
@@ -100,7 +109,7 @@ void render_enemy(struct Context* ctx)
         enemy.meta.rendered = true;
     }
 
-    entity_clamp_to_screen(&enemy.position, ctx->screen.width, ctx->screen.height);
+    entity_clamp(&enemy.position, ctx->screen.width, ctx->screen.height);
 
     const Rectangle enemy_sprite = {
         .x = enemy.position.x,
@@ -111,15 +120,13 @@ void render_enemy(struct Context* ctx)
     const float thickness = .1f * ctx->meta.factor;
     DrawRectangleLinesEx(enemy_sprite, thickness, RED);
 
-    const float velocity = 5.0f;
     const int direction = rand() % NUM_MOVE_DIRECTIONS;
 
     if (ctx->game.should_move_enemies)
     {
         entity_move(
             &enemy.position,
-            direction,
-            velocity
+            direction
         );
     }
 }

@@ -8,10 +8,17 @@ extern int ASPECT_RATIO_WIDTH;
 extern int ASPECT_RATIO_HEIGHT;
 extern int FACTOR;
 
+struct AspectRatio
+{
+    int x;
+    int y;
+};
+
 struct Screen
 {
     int width;
     int height;
+    struct AspectRatio aspect_ratio;
 };
 
 struct Meta
@@ -21,9 +28,26 @@ struct Meta
     int fps;
 };
 
+struct Tile
+{
+    int x;
+    int y;
+    int width;
+    int height;
+};
+
+struct Grid
+{
+    struct Tile* tiles;
+    int rows;
+    int cols;
+    bool rendered;
+};
+
 struct Game
 {
     bool should_move_enemies;
+    struct Grid grid;
 };
 
 struct Context
